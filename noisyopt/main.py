@@ -326,6 +326,8 @@ def minimizeSPSA(func, x0, args=(), bounds=None, niter=100, paired=True,
 
     N = len(x0)
     x = x0
+    if disp:
+        print(x)
     for k in range(niter):
         ak = a/(k+1.0+A)**alpha
         ck = c/(k+1.0)**gamma
