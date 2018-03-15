@@ -71,7 +71,7 @@ def minimizeCompass(func, x0, args=(),
 
     The algorithm terminates when the current iterate is locally optimally
     at the target pattern size deltatol or when the function value differs by
-    less than the tolerance feps along all directions. 
+    less than the tolerance feps along all directions.
 
     Parameters
     ----------
@@ -88,7 +88,7 @@ def minimizeCompass(func, x0, args=(),
     scaling: array-like
         scaling by which to multiply step size and tolerances along different dimensions
     redfactor: float
-        reduction factor by which to reduce delta if no reduction direction found 
+        reduction factor by which to reduce delta if no reduction direction found
     deltainit: float
         initial pattern size
     deltatol: float
@@ -96,7 +96,7 @@ def minimizeCompass(func, x0, args=(),
         function differences at this scale need to be larger than stochasticitiy
         in evaluations to ensure convergence if `errorcontrol=False`
     feps: float
-       smallest difference in function value to resolve 
+       smallest difference in function value to resolve
     errorcontrol: boolean
         whether to control error of simulation by repeated sampling
     funcNinit: int, only for errorcontrol=True
@@ -119,7 +119,7 @@ def minimizeCompass(func, x0, args=(),
     -------
     scipy.optimize.OptimizeResult object
         special entry: free
-        Boolean array indicating parameters that are unconstrained at the optimum (within feps) 
+        Boolean array indicating parameters that are unconstrained at the optimum (within feps)
     """
     #TODO: implement variable deltas for different directions (might speed up things, see review)
     if disp:
@@ -157,7 +157,7 @@ def minimizeCompass(func, x0, args=(),
         return arr
     N = len(x0)
     generatingset = [unit(i, N)*direction*scaling[i] for i in np.arange(N) for direction in [+1, -1]]
-   
+
     # memoize function
     if errorcontrol:
         funcm = AveragedFunction(
@@ -171,7 +171,7 @@ def minimizeCompass(func, x0, args=(),
             return func(x, *args, **kwargs)
         funcm = _memoized(funcf)
 
-    x = x0 
+    x = x0
     delta = deltainit
     # number of iterations
     nit = 0
@@ -242,7 +242,7 @@ def minimizeCompass(func, x0, args=(),
                 and (funcm.diffse(xtest, x) < feps)))):
             free[dim] = True
             message += '. dim %i is free at optimum' % dim
-                
+
     reskwargs = dict(x=x, nit=nit, nfev=funcm.nev, message=message, free=free,
                      success=True)
     if errorcontrol:
@@ -270,12 +270,12 @@ def minimizeSPSA(func, x0, args=(), bounds=None, niter=100, paired=True,
 
     This algorithm approximates the gradient of the function by finite differences
     along stochastic directions Deltak. The elements of Deltak are drawn from
-    +- 1 with probability one half. The gradient is approximated from the 
+    +- 1 with probability one half. The gradient is approximated from the
     symmetric difference f(xk + ck*Deltak) - f(xk - ck*Deltak), where the evaluation
     step size ck is scaled according ck =  c/(k+1)**gamma.
     The algorithm takes a step of size ak = a/(0.01*niter+k+1)**alpha along the
     negative gradient.
-    
+
 
     See Spall, IEEE, 1998, 34, 817-823 for guidelines about how to choose the algorithm's
     parameters (a, alpha, c, gamma).
@@ -287,7 +287,7 @@ def minimizeSPSA(func, x0, args=(), bounds=None, niter=100, paired=True,
         called as `func(x, *args)`,
         if `paired=True`, then called with keyword argument `seed` additionally
     x0: array-like
-        initial guess for parameters 
+        initial guess for parameters
     args: tuple
         extra arguments to be supplied to func
     bounds: array-like
@@ -303,7 +303,7 @@ def minimizeSPSA(func, x0, args=(), bounds=None, niter=100, paired=True,
     c: float
        scaling parameter for evaluation step size
     gamma: float
-        scaling exponent for evaluation step size 
+        scaling exponent for evaluation step size
     disp: boolean
         whether to output status updates during the optimization
     callback: callable
@@ -329,7 +329,7 @@ def minimizeSPSA(func, x0, args=(), bounds=None, niter=100, paired=True,
     for k in range(niter):
         ak = a/(k+1.0+A)**alpha
         ck = c/(k+1.0)**gamma
-        Deltak = np.random.choice([-1, 1], size=N)
+        Deltak = np.random.choice([-1, 1], size=(N,))
         fkwargs = dict()
         if paired:
             fkwargs['seed'] = np.random.randint(0, np.iinfo(np.uint32).max)
@@ -366,7 +366,7 @@ class AverageBase(object):
         self._N = int(N)
         self.paired = paired
         if self.paired:
-            self.uint32max = np.iinfo(np.uint32).max 
+            self.uint32max = np.iinfo(np.uint32).max
             self.seeds = list(np.random.randint(0, self.uint32max, size=int(N)))
         # cache previous iterations
         self.cache = {}
@@ -395,10 +395,10 @@ class AverageBase(object):
         type_: in ['smaller', 'equality']
             type of comparison to perform
         alpha: float
-           significance level 
+           significance level
         force: boolean
             if true increase number of samples until equality rejected or meanse=eps or N > maxN
-        eps: float 
+        eps: float
         maxN: int
         """
         if force:
@@ -447,7 +447,7 @@ class AveragedFunction(AverageBase):
         if xt in self.cache:
             Nold = len(self.cache[xt])
             if Nold < self.N:
-                Nadd = self.N - Nold 
+                Nadd = self.N - Nold
                 if self.paired:
                     values = [self.func(x, seed=self.seeds[Nold+i]) for i in range(Nadd)]
                 else:
@@ -459,18 +459,18 @@ class AveragedFunction(AverageBase):
                 values = [self.func(x, seed=self.seeds[i]) for i in range(self.N)]
             else:
                 values = [self.func(x) for i in range(self.N)]
-            self.cache[xt] = values 
+            self.cache[xt] = values
             self.nev += self.N
         return np.mean(self.cache[xt]), np.std(self.cache[xt], ddof=1)/self.N**.5
 
     def diffse(self, x1, x2):
-        """Standard error of the difference between the function values at x1 and x2""" 
+        """Standard error of the difference between the function values at x1 and x2"""
         f1, f1se = self(x1)
         f2, f2se = self(x2)
         if self.paired:
             fx1 = np.array(self.cache[tuple(x1)])
             fx2 = np.array(self.cache[tuple(x2)])
-            diffse = np.std(fx1-fx2, ddof=1)/self.N**.5 
+            diffse = np.std(fx1-fx2, ddof=1)/self.N**.5
             return diffse
         else:
             return (f1se**2 + f2se**2)**.5
@@ -503,9 +503,9 @@ class AveragedFunction(AverageBase):
         else:
             statistic, pvalue = stats.ttest_ind(fxtest, fx, equal_var=False, axis=None)
         if type_ == 'smaller':
-            # if paired then df=N-1, else df=N1+N2-2=2*N-2 
+            # if paired then df=N-1, else df=N1+N2-2=2*N-2
             df = self.N-1 if self.paired else 2*self.N-2
-            pvalue = stats.t.cdf(statistic, df) 
+            pvalue = stats.t.cdf(statistic, df)
             # return true if null hypothesis rejected
             return pvalue < alpha
         if type_ == 'equality':
@@ -553,7 +553,7 @@ class DifferenceFunction(AverageBase):
             if ixt in self.cache:
                 Nold = len(self.cache[ixt])
                 if Nold < self.N:
-                    Nadd = self.N - Nold 
+                    Nadd = self.N - Nold
                     if self.paired:
                         values = [func(x, seed=self.seeds[Nold+i]) for i in range(Nadd)]
                     else:
@@ -565,7 +565,7 @@ class DifferenceFunction(AverageBase):
                     values = [func(x, seed=self.seeds[i]) for i in range(self.N)]
                 else:
                     values = [func(x) for i in range(self.N)]
-                self.cache[ixt] = values 
+                self.cache[ixt] = values
                 self.nev += self.N
         diff = np.asarray(self.cache[(0, xt)]) - np.asarray(self.cache[(1, xt)])
         return np.mean(diff), np.std(diff, ddof=1)/self.N**.5
@@ -634,13 +634,13 @@ def bisect(func, a, b, xtol=1e-6, errorcontrol=True,
         if ascending:
             if ((not errorcontrol) and (func(mid) < 0)) or \
                     (errorcontrol and func.test0(mid, **testkwargs)):
-                a = mid 
+                a = mid
             else:
                 b = mid
         else:
             if ((not errorcontrol) and (func(mid) < 0)) or \
                     (errorcontrol and func.test0(mid, **testkwargs)):
-                b = mid 
+                b = mid
             else:
                 a = mid
         if disp:
@@ -686,7 +686,7 @@ class _memoized(object):
                     try:
                         index += tuple(arg)
                     except TypeError:
-                        index += (arg, ) 
+                        index += (arg, )
                 # try to also recompute if kwargs changed
                 for item in kwargs.values():
                     try:
