@@ -353,7 +353,9 @@ def minimizeSPSA(func, x0, args=(), bounds=None, niter=100, paired=True,
         if callback is not None:
             callback(x)
         if history:
-            val_history.append(funcf(x))
+            val = funcf(x)
+            print('Iteration ' + str(k) + ': ' + str(val))
+            val_history.append(val)
     message = 'terminated after reaching max number of iterations'
     if history:
         return OptimizeResult(fun=funcf(x), x=x, nit=niter, nfev=2*niter, message=message, success=True, val_history=val_history)
