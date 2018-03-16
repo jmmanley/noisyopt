@@ -263,7 +263,7 @@ def minimize(*args, **kwargs):
 
 def minimizeSPSA(func, x0, args=(), bounds=None, niter=100, paired=True,
                  a=1.0, alpha=0.602, c=1.0, gamma=0.101,
-                 disp=False, callback=None):
+                 disp=False, callback=None, history=True):
     """
     Minimization of an objective function by a simultaneous perturbation
     stochastic approximation algorithm.
@@ -324,6 +324,9 @@ def minimizeSPSA(func, x0, args=(), bounds=None, niter=100, paired=True,
         def funcf(x, **kwargs):
             return func(x, *args, **kwargs)
 
+    if history:
+        val_history = []
+
     N = len(x0)
     x = x0
     if disp:
@@ -349,8 +352,13 @@ def minimizeSPSA(func, x0, args=(), bounds=None, niter=100, paired=True,
             print(x)
         if callback is not None:
             callback(x)
+        if history:
+            val_history.append(funcf(x))
     message = 'terminated after reaching max number of iterations'
-    return OptimizeResult(fun=funcf(x), x=x, nit=niter, nfev=2*niter, message=message, success=True)
+    if history:
+        return OptimizeResult(fun=funcf(x), x=x, nit=niter, nfev=2*niter, message=message, success=True, val_history=val_history)
+    else:
+        return OptimizeResult(fun=funcf(x), x=x, nit=niter, nfev=2*niter, message=message, success=True)
 
 class AverageBase(object):
     """
